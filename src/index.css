@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'OngleipParkDahyeon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2411-3@1.0/Ownglyph_ParkDaHyun.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Force all text elements, inputs, buttons, and components to use OngleipParkDahyeon */
+*,
+*::before,
+*::after,
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: 'OngleipParkDahyeon', cursive, -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+@layer utilities {
+  .font-ongleip,
+  .font-jua,
+  .font-gaegu,
+  .font-dongle,
+  .font-sans {
+    font-family: 'OngleipParkDahyeon', cursive, sans-serif !important;
+  }
+}
+
+@keyframes flash-anim {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+.animate-flash {
+  animation: flash-anim 0.35s ease-out forwards;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s infinite ease-in-out;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.8s infinite cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+/* Print styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-photo-strip, #printable-photo-strip * {
+    visibility: visible;
+  }
+  #printable-photo-strip {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+    max-height: 98vh;
+    box-shadow: none !important;
+  }
+}
