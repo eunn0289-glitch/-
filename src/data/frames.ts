@@ -3,7 +3,7 @@ import { FrameTheme } from '../types';
 export const FRAME_THEMES: FrameTheme[] = [
   {
     id: 'chick-yellow',
-    name: '노랑 병아리반',
+    name: '노랑 병아리 & 새싹',
     category: '인기 캐릭터',
     bgColor: '#FEF08A', // Amber/Yellow 200
     borderColor: '#F59E0B',
@@ -17,7 +17,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'rainbow-cloud',
-    name: '알록달록 무지개반',
+    name: '파란하늘 무지개 구름',
     category: '자연 & 꿈',
     bgColor: '#BAE6FD', // Sky 200
     borderColor: '#38BDF8',
@@ -31,7 +31,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'bear-forest',
-    name: '도토리 곰돌이반',
+    name: '따스한 도토리 곰돌이',
     category: '동물 친구들',
     bgColor: '#FED7AA', // Orange/Brown cozy 200
     borderColor: '#D97706',
@@ -45,7 +45,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'pink-strawberry',
-    name: '딸기 퐁당 토끼반',
+    name: '달콤 딸기 핑크 토끼',
     category: '동물 친구들',
     bgColor: '#FBCFE8', // Pink 200
     borderColor: '#F472B6',
@@ -59,7 +59,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'mint-sprout',
-    name: '초록 숲속 새싹반',
+    name: '싱그러운 초록 숲속',
     category: '자연 & 꿈',
     bgColor: '#BBF7D0', // Green 200
     borderColor: '#4ADE80',
@@ -73,7 +73,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'lavender-night',
-    name: '반짝이는 밤하늘별',
+    name: '반짝이는 보라 밤하늘',
     category: '자연 & 꿈',
     bgColor: '#DDD6FE', // Violet 200
     borderColor: '#A78BFA',
@@ -87,7 +87,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'chalkboard-kinder',
-    name: '꼬마 화가 분필 칠판',
+    name: '분필 낙서 초록 칠판',
     category: '유치원 교실',
     bgColor: '#064E3B', // Emerald dark green
     borderColor: '#047857',
@@ -101,7 +101,7 @@ export const FRAME_THEMES: FrameTheme[] = [
   },
   {
     id: 'clean-classic',
-    name: '깔끔 스튜디오 화이트',
+    name: '심플 모던 화이트',
     category: '인기 포토부스',
     bgColor: '#F8FAFC', // Slate 50
     borderColor: '#CBD5E1',

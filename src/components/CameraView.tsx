@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, RefreshCw, Sparkles, AlertCircle, Upload, CheckCircle2 } from 'lucide-react';
+import { Camera, RefreshCw, Sparkles, AlertCircle, Upload, CheckCircle2, Pause, Play, RotateCcw } from 'lucide-react';
 import { CapturedPhoto } from '../types';
 import { playCountdownBeep, playShutterSound, playVictoryChime } from '../utils/sound';
 import { generateSamplePhotoDataUrl } from '../utils/sampleGenerator';
@@ -28,11 +28,19 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
   // Shooting state
   const [isShooting, setIsShooting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [currentShotIndex, setCurrentShotIndex] = useState(0); // 0 to 4
   const [countdown, setCountdown] = useState<number | null>(null); // 3, 2, 1, or null
   const [isFlashing, setIsFlashing] = useState(false);
   const [betweenDelay, setBetweenDelay] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
+
+  // Timer refs to prevent background timer leaks
+  const countdownIntervalRef = useRef<number | null>(null);
+  const transitionTimeoutRef = useRef<number | null>(null);
+  const flashTimeoutRef = useRef<number | null>(null);
+  const finishTimeoutRef = useRef<number | null>(null);
+  const isCancelledRef = useRef<boolean>(false);
 
   // Start webcam
   const startCamera = useCallback(async () => {
@@ -97,41 +105,121 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
     return canvas.toDataURL('image/jpeg', 0.95);
   };
 
-  // Start the 5-photo automated photoshoot sequence
-  const startPhotoshootSequence = () => {
+  // Stop all active intervals/timeouts immediately
+  const stopAllTimers = useCallback(() => {
+    isCancelledRef.current = true;
+    if (countdownIntervalRef.current !== null) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    if (transitionTimeoutRef.current !== null) {
+      clearTimeout(transitionTimeoutRef.current);
+      transitionTimeoutRef.current = null;
+    }
+    if (flashTimeoutRef.current !== null) {
+      clearTimeout(flashTimeoutRef.current);
+      flashTimeoutRef.current = null;
+    }
+    if (finishTimeoutRef.current !== null) {
+      clearTimeout(finishTimeoutRef.current);
+      finishTimeoutRef.current = null;
+    }
+    setCountdown(null);
+    setBetweenDelay(false);
+    setIsFlashing(false);
+  }, []);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      stopAllTimers();
+    };
+  }, [stopAllTimers]);
+
+  // Pause photoshoot keeping captured photos intact
+  const handlePauseShooting = () => {
+    stopAllTimers();
+    setIsShooting(false);
+    setIsPaused(true);
+  };
+
+  // Resume photoshoot from the next photo slot
+  const handleResumeShooting = () => {
+    const nextIdx = capturedPhotos.length;
+    if (nextIdx >= 5) {
+      onAllPhotosCaptured(capturedPhotos);
+      return;
+    }
+    isCancelledRef.current = false;
+    setIsPaused(false);
+    setIsShooting(true);
+    triggerShotCountdown(nextIdx);
+  };
+
+  // Reset photoshoot completely
+  const handleResetShoot = () => {
+    stopAllTimers();
     setCapturedPhotos([]);
     setCurrentShotIndex(0);
+    setIsShooting(false);
+    setIsPaused(false);
+  };
+
+  // Start the 5-photo automated photoshoot sequence
+  const startPhotoshootSequence = () => {
+    stopAllTimers();
+    isCancelledRef.current = false;
+    setCapturedPhotos([]);
+    setCurrentShotIndex(0);
+    setIsPaused(false);
     setIsShooting(true);
     triggerShotCountdown(0);
   };
 
   // Trigger countdown for shot 'shotIdx'
   const triggerShotCountdown = (shotIdx: number) => {
+    stopAllTimers();
+    isCancelledRef.current = false;
     setCurrentShotIndex(shotIdx);
     setBetweenDelay(false);
     setCountdown(3);
     playCountdownBeep(3);
 
     let currentCount = 3;
-    const interval = setInterval(() => {
+    countdownIntervalRef.current = window.setInterval(() => {
+      if (isCancelledRef.current) {
+        if (countdownIntervalRef.current !== null) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
+        return;
+      }
+
       currentCount -= 1;
       if (currentCount > 0) {
         setCountdown(currentCount);
         playCountdownBeep(currentCount);
       } else {
-        clearInterval(interval);
-        setCountdown(0); // Shutter!
-        executeShutter(shotIdx);
+        if (countdownIntervalRef.current !== null) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
+        if (!isCancelledRef.current) {
+          setCountdown(0); // Shutter!
+          executeShutter(shotIdx);
+        }
       }
     }, 1000);
   };
 
   // Execute snapshot
   const executeShutter = (shotIdx: number) => {
+    if (isCancelledRef.current) return;
+
     // Shutter sound & flash
     playShutterSound();
     setIsFlashing(true);
-    setTimeout(() => setIsFlashing(false), 350);
+    flashTimeoutRef.current = window.setTimeout(() => setIsFlashing(false), 350);
 
     let dataUrl = '';
     if (hasPermission && videoRef.current) {
@@ -149,21 +237,26 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
     };
 
     setCapturedPhotos((prev) => {
+      if (isCancelledRef.current) return prev;
       const updated = [...prev, newPhoto];
-      const nextIdx = shotIdx + 1;
+      const nextIdx = updated.length;
 
       if (nextIdx < 5) {
         // Prepare next shot with friendly pause
         setBetweenDelay(true);
-        setTimeout(() => {
-          triggerShotCountdown(nextIdx);
+        transitionTimeoutRef.current = window.setTimeout(() => {
+          if (!isCancelledRef.current) {
+            triggerShotCountdown(nextIdx);
+          }
         }, 1800);
       } else {
         // All 5 shots done!
-        setTimeout(() => {
-          setIsShooting(false);
-          playVictoryChime();
-          onAllPhotosCaptured(updated);
+        finishTimeoutRef.current = window.setTimeout(() => {
+          if (!isCancelledRef.current) {
+            setIsShooting(false);
+            playVictoryChime();
+            onAllPhotosCaptured(updated);
+          }
         }, 800);
       }
 
@@ -173,20 +266,13 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
   // Fallback demo shoot using sample photos
   const runSampleShoot = () => {
+    stopAllTimers();
+    isCancelledRef.current = false;
     setHasPermission(true);
     setCapturedPhotos([]);
     setCurrentShotIndex(0);
+    setIsPaused(false);
     setIsShooting(true);
-
-    const photos: CapturedPhoto[] = [];
-    for (let i = 0; i < 5; i++) {
-      photos.push({
-        id: `sample-${i}-${Date.now()}`,
-        dataUrl: generateSamplePhotoDataUrl(i),
-        order: i + 1,
-        timestamp: Date.now(),
-      });
-    }
 
     triggerShotCountdown(0);
   };
@@ -241,6 +327,10 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             <span className="text-amber-600">
               [{currentShotIndex + 1} / 5번째 사진] {POSE_HINTS[currentShotIndex]?.pose}
             </span>
+          ) : isPaused ? (
+            <span className="text-amber-700">
+              ⏸️ 촬영이 잠시 멈췄어요 ({capturedPhotos.length}장 촬영 완료)
+            </span>
           ) : (
             '카메라를 보며 신나는 포즈를 준비해주세요!'
           )}
@@ -248,6 +338,8 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
         <p className="text-stone-600 font-gaegu text-xl mt-1">
           {isShooting
             ? POSE_HINTS[currentShotIndex]?.tip
+            : isPaused
+            ? '준비가 되면 아래 [이어서 촬영하기]를 눌러주세요! 찍어둔 사진은 안전하게 저장되어 있어요 😊'
             : '3, 2, 1 카운트다운에 맞춰 5가지 예쁜 포즈를 보여주세요 ✨'}
         </p>
       </div>
@@ -346,6 +438,49 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
           </div>
         )}
 
+        {/* Paused Overlay */}
+        {isPaused && (
+          <div className="absolute inset-0 bg-stone-900/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-30">
+            <div className="w-16 h-16 rounded-full bg-amber-400/20 border-2 border-amber-400 flex items-center justify-center text-amber-300 text-3xl mb-3">
+              ⏸️
+            </div>
+            <h3 className="text-2xl font-jua text-white mb-1">
+              촬영이 잠시 멈췄어요
+            </h3>
+            <p className="text-stone-300 font-sans text-sm mb-5">
+              지금까지 <span className="text-amber-400 font-bold font-jua">{capturedPhotos.length}장</span>의 사진이 안전하게 저장되어 있어요!
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                type="button"
+                onClick={handleResumeShooting}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-lg shadow-lg flex items-center gap-2 transition hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <Play className="w-5 h-5 fill-white" />
+                <span>이어서 {capturedPhotos.length + 1}번째 컷 찍기</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleResetShoot}
+                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-stone-200 font-jua text-sm flex items-center gap-2 transition cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>처음부터 다시 찍기</span>
+              </button>
+              {capturedPhotos.length >= 4 && (
+                <button
+                  type="button"
+                  onClick={() => onAllPhotosCaptured(capturedPhotos)}
+                  className="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-sm flex items-center gap-2 transition shadow-md cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>지금 사진들로 바로 4장 고르기</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Camera Control Overlays (Top Right & Left) */}
         {!isShooting && hasPermission && (
           <>
@@ -409,12 +544,56 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
       {/* Bottom Main Action Button */}
       <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-        {!isShooting ? (
+        {isShooting ? (
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="px-5 py-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 font-jua text-base flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
+              <span>사진 촬영이 진행 중입니다... ({currentShotIndex + 1}/5번째 컷)</span>
+            </div>
+            <button
+              type="button"
+              onClick={handlePauseShooting}
+              className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-jua text-base shadow-md transition flex items-center gap-2 cursor-pointer"
+            >
+              <Pause className="w-4 h-4" />
+              <span>촬영 멈추기 (잠시 멈춤)</span>
+            </button>
+          </div>
+        ) : isPaused ? (
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleResumeShooting}
+              className="px-8 py-4 rounded-3xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-xl md:text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-4 border-amber-200 cursor-pointer"
+            >
+              <Play className="w-6 h-6 fill-white" />
+              <span>이어서 촬영하기 ({capturedPhotos.length + 1} / 5번째 컷)</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleResetShoot}
+              className="px-5 py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-base transition flex items-center gap-2 cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>처음부터 다시 찍기</span>
+            </button>
+            {capturedPhotos.length >= 4 && (
+              <button
+                type="button"
+                onClick={() => onAllPhotosCaptured(capturedPhotos)}
+                className="px-5 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-base shadow-md transition flex items-center gap-2 hover:scale-105 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>선택하러 가기 (4장 완료)</span>
+              </button>
+            )}
+          </div>
+        ) : (
           <>
             <button
               type="button"
               onClick={startPhotoshootSequence}
-              className="px-8 py-4 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-jua text-2xl md:text-3xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-4 border-amber-200"
+              className="px-8 py-4 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-jua text-2xl md:text-3xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-4 border-amber-200 cursor-pointer"
             >
               <Camera className="w-8 h-8" />
               <span>사진 촬영 시작하기! (총 5장)</span>
@@ -423,30 +602,12 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             <button
               type="button"
               onClick={runSampleShoot}
-              className="px-5 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-jua text-sm md:text-base transition flex items-center gap-2"
+              className="px-5 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-jua text-sm md:text-base transition flex items-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>샘플 사진으로 테스트</span>
             </button>
           </>
-        ) : (
-          <div className="flex items-center gap-3">
-            <div className="px-6 py-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 font-jua text-lg flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
-              <span>사진 촬영이 진행 중입니다... (3초 카운트다운)</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setIsShooting(false);
-                setCountdown(null);
-                setBetweenDelay(false);
-              }}
-              className="px-4 py-3 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-sm transition"
-            >
-              촬영 멈추기
-            </button>
-          </div>
         )}
       </div>
     </div>

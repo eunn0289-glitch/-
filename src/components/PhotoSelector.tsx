@@ -232,10 +232,10 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
         <button
           type="button"
           onClick={onRetake}
-          className="px-6 py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-lg transition flex items-center gap-2"
+          className="px-6 py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-lg transition flex items-center gap-2 cursor-pointer"
         >
           <RotateCcw className="w-5 h-5" />
-          <span>다시 찍기</span>
+          <span>이전 단계 (다시 촬영하기)</span>
         </button>
 
         <button
@@ -248,7 +248,7 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
               : 'bg-stone-300 text-stone-500 border-stone-200 cursor-not-allowed'
           }`}
         >
-          <span>프레임 고르러 가기 🎨</span>
+          <span>다음 단계 (프레임 꾸미기) 🎨</span>
           <ArrowRight className="w-6 h-6" />
         </button>
       </div>

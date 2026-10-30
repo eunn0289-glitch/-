@@ -35,12 +35,14 @@ export interface FilterOption {
 
 export interface PlacedSticker {
   id: string;
-  content: string; // Emoji, SVG string or text badge
-  type: 'emoji' | 'stamp' | 'badge';
+  content: string; // Emoji, SVG path, or stamp text
+  type: 'emoji' | 'stamp' | 'badge' | 'svg_prop';
   x: number; // Percentage 0-100 on frame
   y: number; // Percentage 0-100 on frame
   size: number; // In px relative to baseline
   rotation: number; // Degrees
+  color?: string;
+  svgName?: string;
 }
 
 export interface PhotoboothConfig {

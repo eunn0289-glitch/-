@@ -8,7 +8,11 @@
   font-display: swap;
 }
 
-/* Force all text elements, inputs, buttons, and components to use OngleipParkDahyeon */
+/* Force all text elements, inputs, buttons, and components to use OngleipParkDahyeon and increase font size by 2pt */
+html {
+  font-size: 18px;
+}
+
 *,
 *::before,
 *::after,

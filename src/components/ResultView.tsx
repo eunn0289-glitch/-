@@ -88,7 +88,7 @@ export const ResultView: React.FC<ResultViewProps> = ({ canvas, config, onRestar
       {/* Main Result Card */}
       <div className="w-full bg-amber-100/50 rounded-3xl p-6 border-2 border-amber-200 flex flex-col items-center mb-8 shadow-sm">
         {/* Printable Section */}
-        <div className="relative max-w-sm sm:max-w-md my-4 p-3 bg-white rounded-3xl shadow-2xl border-4 border-amber-300">
+        <div className={`relative ${config.layout === 'grid-2x2' ? 'max-w-md sm:max-w-lg' : 'max-w-sm sm:max-w-md'} my-4 p-3 bg-white rounded-3xl shadow-2xl border-4 border-amber-300`}>
           <img
             id="printable-photo-strip"
             src={dataUrl}

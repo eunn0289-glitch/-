@@ -11,32 +11,26 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onStart, onSampleStart
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
       {/* Hero Mascot Banner */}
-      <div className="relative w-full bg-gradient-to-b from-amber-200 via-amber-100 to-white rounded-3xl p-6 sm:p-10 border-4 border-amber-300 shadow-xl text-center overflow-hidden mb-8">
+      <div className="relative w-full bg-gradient-to-b from-amber-200 via-amber-100 to-white rounded-3xl p-8 sm:p-12 md:py-14 border-4 border-amber-300 shadow-xl text-center overflow-hidden mb-8">
         {/* Floating background decorative emojis */}
-        <div className="absolute top-3 left-4 text-4xl opacity-30 select-none animate-bounce-subtle">
+        <div className="absolute top-4 left-6 text-4xl sm:text-5xl opacity-30 select-none animate-bounce-subtle">
           🐥
         </div>
-        <div className="absolute top-4 right-6 text-4xl opacity-30 select-none animate-bounce-subtle">
+        <div className="absolute top-5 right-8 text-4xl sm:text-5xl opacity-30 select-none animate-bounce-subtle">
           🧸
         </div>
-        <div className="absolute bottom-4 left-8 text-3xl opacity-25 select-none">🌈</div>
-        <div className="absolute bottom-4 right-8 text-4xl opacity-30 select-none">🌸</div>
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-amber-900 font-jua text-base shadow-sm border border-amber-200 mb-4">
-          <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
-          <span>유치원 & 어린이집 전용 귀여운 포토부스</span>
-        </div>
+        <div className="absolute bottom-6 left-10 text-3xl sm:text-4xl opacity-25 select-none">🌈</div>
+        <div className="absolute bottom-6 right-10 text-4xl sm:text-5xl opacity-30 select-none">🌸</div>
 
         {/* Main Title */}
-        <h1 className="text-3xl sm:text-5xl font-jua text-stone-900 tracking-tight leading-tight mb-3">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-jua text-stone-900 tracking-tight leading-snug mb-4 sm:mb-5">
           우리들의 행복한 순간, <br />
           <span className="text-amber-600 underline decoration-wavy decoration-amber-400">
             우리반 네컷 사진관
           </span> 📸
         </h1>
 
-        <p className="text-lg sm:text-2xl font-gaegu text-stone-700 max-w-2xl mx-auto mb-8">
+        <p className="text-xl sm:text-2xl md:text-3xl font-gaegu text-stone-700 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
           3, 2, 1 카운트다운과 함께 신나게 5장의 사진을 찍고, <br className="hidden sm:inline" />
           가장 마음에 드는 4장을 골라 귀여운 프레임과 스티커로 꾸며보세요!
         </p>
@@ -61,7 +55,7 @@ export const WelcomeHero: React.FC<WelcomeHeroProps> = ({ onStart, onSampleStart
               playPopSound();
               onSampleStart();
             }}
-            className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-white hover:bg-stone-50 text-stone-700 font-jua text-base sm:text-lg border-2 border-amber-300 shadow-md transition flex items-center justify-center gap-2 hover:scale-102"
+            className="w-full sm:w-auto px-7 py-4.5 rounded-2xl bg-white hover:bg-stone-50 text-stone-700 font-jua text-lg sm:text-xl border-2 border-amber-300 shadow-md transition flex items-center justify-center gap-2 hover:scale-102 cursor-pointer"
           >
             <Sparkles className="w-5 h-5 text-amber-500" />
             <span>샘플 사진으로 미리 체험</span>

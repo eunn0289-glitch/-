@@ -26,15 +26,9 @@ export default function App() {
     setSoundEnabled(newState);
   };
 
-  // Start real shoot
-  const handleStartShoot = () => {
-    setCapturedPhotos([]);
-    setSelectedPhotos([]);
-    setStep('capturing');
-  };
-
-  // Sample mode direct load
-  const handleSampleShoot = () => {
+  // Helper to ensure 5 photos exist when jumping to later steps
+  const ensurePhotosExist = (): CapturedPhoto[] => {
+    if (capturedPhotos.length >= 5) return capturedPhotos;
     const samples: CapturedPhoto[] = [];
     for (let i = 0; i < 5; i++) {
       samples.push({
@@ -45,12 +39,36 @@ export default function App() {
       });
     }
     setCapturedPhotos(samples);
+    return samples;
+  };
+
+  // Helper to ensure 4 selected photos exist
+  const ensureSelectedExist = (): CapturedPhoto[] => {
+    if (selectedPhotos.length === 4) return selectedPhotos;
+    const pool = ensurePhotosExist();
+    const sel = pool.slice(0, 4);
+    setSelectedPhotos(sel);
+    return sel;
+  };
+
+  // Start real shoot
+  const handleStartShoot = () => {
+    setCapturedPhotos([]);
+    setSelectedPhotos([]);
+    setStep('capturing');
+  };
+
+  // Sample mode direct load
+  const handleSampleShoot = () => {
+    const samples = ensurePhotosExist();
+    setSelectedPhotos(samples.slice(0, 4));
     setStep('selecting');
   };
 
   // When all 5 photos are taken in CameraView
   const handleAllPhotosCaptured = (photos: CapturedPhoto[]) => {
     setCapturedPhotos(photos);
+    setSelectedPhotos(photos.slice(0, 4));
     setStep('selecting');
   };
 
@@ -71,24 +89,73 @@ export default function App() {
     setStep('result');
   };
 
-  // Restart
-  const handleRestart = () => {
-    if (step !== 'ready' && step !== 'result') {
-      const confirmLeave = window.confirm('처음 화면으로 돌아갈까요? 촬영 중인 사진이 초기화됩니다.');
-      if (!confirmLeave) return;
-    }
-    setCapturedPhotos([]);
-    setSelectedPhotos([]);
-    setFinalCanvas(null);
+  // Home Navigation
+  const handleNavigateHome = () => {
     setStep('ready');
   };
+
+  // Step Select Handler (Direct jump to 1-5)
+  const handleStepSelect = (targetStep: StepType) => {
+    if (targetStep === 'ready') {
+      setStep('ready');
+    } else if (targetStep === 'capturing') {
+      setStep('capturing');
+    } else if (targetStep === 'selecting') {
+      ensurePhotosExist();
+      setStep('selecting');
+    } else if (targetStep === 'customizing') {
+      ensureSelectedExist();
+      setStep('customizing');
+    } else if (targetStep === 'result') {
+      if (finalCanvas && finalConfig) {
+        setStep('result');
+      } else {
+        ensureSelectedExist();
+        setStep('customizing');
+      }
+    }
+  };
+
+  // Prev Step Handler
+  const handlePrevStep = () => {
+    if (step === 'result') setStep('customizing');
+    else if (step === 'customizing') setStep('selecting');
+    else if (step === 'selecting') setStep('capturing');
+    else if (step === 'capturing') setStep('ready');
+  };
+
+  // Next Step Handler
+  const handleNextStep = () => {
+    if (step === 'ready') {
+      setStep('capturing');
+    } else if (step === 'capturing') {
+      ensurePhotosExist();
+      setStep('selecting');
+    } else if (step === 'selecting') {
+      ensureSelectedExist();
+      setStep('customizing');
+    } else if (step === 'customizing') {
+      // If ready to see result
+      if (finalCanvas && finalConfig) {
+        setStep('result');
+      }
+    }
+  };
+
+  const canPrev = step !== 'ready';
+  const canNext = step !== 'result' && (step !== 'customizing' || Boolean(finalCanvas));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50/30 to-amber-100/50 flex flex-col font-sans">
       {/* Top Navigation */}
       <Navbar
         currentStep={step}
-        onNavigateHome={handleRestart}
+        onNavigateHome={handleNavigateHome}
+        onStepSelect={handleStepSelect}
+        onPrevStep={handlePrevStep}
+        onNextStep={handleNextStep}
+        canPrev={canPrev}
+        canNext={canNext}
         soundState={soundActive}
         onToggleSound={handleToggleSound}
       />
@@ -105,13 +172,13 @@ export default function App() {
         {step === 'capturing' && (
           <CameraView
             onAllPhotosCaptured={handleAllPhotosCaptured}
-            onCancel={handleRestart}
+            onCancel={handleNavigateHome}
           />
         )}
 
         {step === 'selecting' && (
           <PhotoSelector
-            capturedPhotos={capturedPhotos}
+            capturedPhotos={capturedPhotos.length >= 4 ? capturedPhotos : ensurePhotosExist()}
             onPhotosSelected={handlePhotosSelected}
             onRetake={() => setStep('capturing')}
           />
@@ -119,7 +186,7 @@ export default function App() {
 
         {step === 'customizing' && (
           <FrameCustomizer
-            selectedPhotos={selectedPhotos}
+            selectedPhotos={selectedPhotos.length === 4 ? selectedPhotos : ensureSelectedExist()}
             onBackToSelect={() => setStep('selecting')}
             onFinish={handleFinishCustomization}
           />
@@ -129,14 +196,14 @@ export default function App() {
           <ResultView
             canvas={finalCanvas}
             config={finalConfig}
-            onRestart={() => setStep('ready')}
+            onRestart={handleNavigateHome}
           />
         )}
       </main>
 
       {/* Footer */}
       <footer className="w-full border-t border-amber-200 bg-white/70 py-4 text-center text-xs font-jua text-amber-900/60 print:hidden">
-        우리들의 소중한 유치원 추억 📸 우리반 네컷 사진관 • 햇살반 새싹반 어린이 모두 함께해요!
+        우리들의 소중한 유치원 추억 📸 우리반 네컷 사진관 • 다산새봄유치원 푸름반 어린이 모두 함께해요!
       </footer>
     </div>
   );

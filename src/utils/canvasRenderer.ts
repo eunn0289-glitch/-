@@ -45,43 +45,50 @@ function drawRoundRect(
   ctx.closePath();
 }
 
-// Helper to draw cute decorative elements by theme
+// Helper to draw cute decorative elements by theme adjusted to text width (no sparkles)
 function drawThemeDecorations(
   ctx: CanvasRenderingContext2D,
   theme: FrameTheme,
   width: number,
-  height: number
+  height: number,
+  titleWidth: number = 0
 ) {
   ctx.save();
-  const icon = theme.icon || '⭐';
 
-  // Corner doodles / icons
-  ctx.font = '36px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  // Position left/right inner icons based on actual text width
+  const halfTitle = Math.max(titleWidth / 2, 70);
+  const leftX = Math.max(76, width / 2 - halfTitle - 26);
+  const rightX = Math.min(width - 76, width / 2 + halfTitle + 26);
 
-  // Top header cute accents
-  ctx.fillText(icon, 50, 48);
-  ctx.fillText(icon, width - 50, 48);
+  let leftEmoji = '';
+  let rightEmoji = '';
 
   if (theme.cornerDecoration === 'chick') {
-    ctx.fillText('🐥', width / 2 - 120, 48);
-    ctx.fillText('🌱', width / 2 + 120, 48);
+    leftEmoji = '🐥';
+    rightEmoji = '🌱';
   } else if (theme.cornerDecoration === 'rainbow') {
-    ctx.fillText('☁️', width / 2 - 130, 48);
-    ctx.fillText('🌈', width / 2 + 130, 48);
+    leftEmoji = '☁️';
+    rightEmoji = '🌈';
   } else if (theme.cornerDecoration === 'bear') {
-    ctx.fillText('🌰', width / 2 - 120, 48);
-    ctx.fillText('🧸', width / 2 + 120, 48);
+    leftEmoji = '🌰';
+    rightEmoji = '🧸';
   } else if (theme.cornerDecoration === 'heart') {
-    ctx.fillText('💖', width / 2 - 120, 48);
-    ctx.fillText('🎀', width / 2 + 120, 48);
+    leftEmoji = '🐰';
+    rightEmoji = '🎀';
   } else if (theme.cornerDecoration === 'flower') {
-    ctx.fillText('🌸', width / 2 - 120, 48);
-    ctx.fillText('🍀', width / 2 + 120, 48);
-  } else {
-    ctx.fillText('✨', width / 2 - 120, 48);
-    ctx.fillText('⭐', width / 2 + 120, 48);
+    leftEmoji = '🌸';
+    rightEmoji = '🍀';
+  } else if (theme.cornerDecoration === 'chalk') {
+    leftEmoji = '🖍️';
+    rightEmoji = '✏️';
+  }
+
+  if (leftEmoji && rightEmoji) {
+    ctx.font = '32px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(leftEmoji, leftX, 48);
+    ctx.fillText(rightEmoji, rightX, 48);
   }
 
   ctx.restore();
@@ -118,15 +125,20 @@ async function drawSingleStripColumn(
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
   ctx.strokeRect(18, 18, colWidth - 36, colHeight - 36);
 
-  // Top header decorations
-  drawThemeDecorations(ctx, theme, colWidth, colHeight);
+  // Title text & font sizing (+2pt: 34px -> 36px)
+  const titleText = config.className || '우리반 네컷';
+  ctx.font = 'bold 36px "OngleipParkDahyeon", "Jua", "Noto Sans KR", sans-serif';
+  const titleMetrics = ctx.measureText(titleText);
+  const titleWidth = titleMetrics.width;
+
+  // Top header decorations dynamically positioned around the text
+  drawThemeDecorations(ctx, theme, colWidth, colHeight, titleWidth);
 
   // Header Title
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = theme.textColor;
-  ctx.font = 'bold 34px "OngleipParkDahyeon", "Jua", "Noto Sans KR", sans-serif';
-  ctx.fillText(config.className || '우리반 네컷', colWidth / 2, 48);
+  ctx.fillText(titleText, colWidth / 2, 48);
 
   // Dimensions for the 4 photos
   const paddingX = 40;
@@ -190,7 +202,7 @@ async function drawSingleStripColumn(
     ctx.stroke();
 
     ctx.fillStyle = theme.badgeText || theme.textColor;
-    ctx.font = 'bold 16px "OngleipParkDahyeon", "Jua", sans-serif';
+    ctx.font = 'bold 18px "OngleipParkDahyeon", "Jua", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${i + 1}`, paddingX + 22, curY + 23);
@@ -200,18 +212,18 @@ async function drawSingleStripColumn(
   // Footer section
   const footerY = startY + 4 * (photoH + gap) + 10;
 
-  // Custom message
+  // Custom message (+2pt: 26px -> 28px)
   if (config.customMessage) {
     ctx.fillStyle = theme.subtextColor;
-    ctx.font = '26px "OngleipParkDahyeon", "Gaegu", cursive, sans-serif';
+    ctx.font = '28px "OngleipParkDahyeon", "Gaegu", cursive, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(config.customMessage, colWidth / 2, footerY + 20);
   }
 
-  // Date
+  // Date (+2pt: 20px -> 22px)
   if (config.showDate) {
     ctx.fillStyle = theme.textColor;
-    ctx.font = 'bold 20px "OngleipParkDahyeon", "Jua", sans-serif';
+    ctx.font = 'bold 22px "OngleipParkDahyeon", "Jua", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(config.dateStr || new Date().toLocaleDateString('ko-KR'), colWidth / 2, footerY + 54);
   }
@@ -229,8 +241,8 @@ async function drawSingleStripColumn(
       curBx += bw + 2;
     }
 
-    // Little photobooth logo text under barcode
-    ctx.font = '14px "OngleipParkDahyeon", sans-serif';
+    // Little photobooth logo text under barcode (+2pt: 14px -> 16px)
+    ctx.font = '16px "OngleipParkDahyeon", sans-serif';
     ctx.fillStyle = theme.subtextColor;
     ctx.textAlign = 'center';
     ctx.fillText('KINDERGARTEN PHOTO 4-CUT ★ MEMORIES', colWidth / 2, bcY + 38);
@@ -265,16 +277,33 @@ async function draw2x2GridLayout(
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
   ctx.strokeRect(22, 22, width - 44, height - 44);
 
-  // Header
-  ctx.font = '36px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+  // 2x2 Header: Perfectly Centered Title
+  const titleText = config.className || '우리반 네컷';
+  ctx.save();
+  ctx.fillStyle = theme.textColor;
+  ctx.font = 'bold 44px "OngleipParkDahyeon", "Jua", "Noto Sans KR", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(theme.icon || '🌸', 60, 56);
-  ctx.fillText(theme.icon || '🌸', width - 60, 56);
+  ctx.fillText(titleText, width / 2, 58);
 
-  ctx.fillStyle = theme.textColor;
-  ctx.font = 'bold 40px "OngleipParkDahyeon", "Jua", "Noto Sans KR", sans-serif';
-  ctx.fillText(config.className || '우리반 네컷', width / 2, 56);
+  // Balanced single theme accent on left and right (no sparkles)
+  const themeEmoji =
+    theme.cornerDecoration === 'chick' ? '🐥' :
+    theme.cornerDecoration === 'rainbow' ? '🌈' :
+    theme.cornerDecoration === 'bear' ? '🧸' :
+    theme.cornerDecoration === 'heart' ? '🐰' :
+    theme.cornerDecoration === 'flower' ? '🌱' :
+    theme.cornerDecoration === 'chalk' ? '🖍️' : '';
+
+  if (themeEmoji) {
+    const titleMetrics = ctx.measureText(titleText);
+    const titleWidth = titleMetrics.width;
+    ctx.font = '32px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+    const sideOffset = Math.min(titleWidth / 2 + 36, width / 2 - 40);
+    ctx.fillText(themeEmoji, width / 2 - sideOffset, 58);
+    ctx.fillText(themeEmoji, width / 2 + sideOffset, 58);
+  }
+  ctx.restore();
 
   // Grid Dimensions: 2 columns, 2 rows
   const padX = 50;
@@ -332,7 +361,7 @@ async function draw2x2GridLayout(
       ctx.restore();
     }
 
-    // Badge
+    // Badge (+2pt: 16px -> 18px)
     ctx.save();
     ctx.fillStyle = theme.badgeBg || '#FFFFFF';
     ctx.beginPath();
@@ -343,7 +372,7 @@ async function draw2x2GridLayout(
     ctx.stroke();
 
     ctx.fillStyle = theme.badgeText || theme.textColor;
-    ctx.font = 'bold 16px "OngleipParkDahyeon", "Jua", sans-serif';
+    ctx.font = 'bold 18px "OngleipParkDahyeon", "Jua", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${i + 1}`, pos.x + 22, pos.y + 23);
@@ -353,20 +382,23 @@ async function draw2x2GridLayout(
   // Footer
   const footerY = startY + (cellH * 2) + gap + 30;
 
+  // Custom message (+2pt: 28px -> 30px)
   if (config.customMessage) {
     ctx.fillStyle = theme.subtextColor;
-    ctx.font = '28px "OngleipParkDahyeon", "Gaegu", cursive, sans-serif';
+    ctx.font = '30px "OngleipParkDahyeon", "Gaegu", cursive, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(config.customMessage, width / 2, footerY);
   }
 
+  // Date (+2pt: 22px -> 24px)
   if (config.showDate) {
     ctx.fillStyle = theme.textColor;
-    ctx.font = 'bold 22px "OngleipParkDahyeon", "Jua", sans-serif';
+    ctx.font = 'bold 24px "OngleipParkDahyeon", "Jua", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(config.dateStr || new Date().toLocaleDateString('ko-KR'), width / 2, footerY + 36);
   }
 
+  // Life4cut style barcode (+2pt: 14px -> 16px)
   if (config.showBarcode) {
     const bcY = footerY + 60;
     ctx.fillStyle = theme.textColor;
@@ -377,7 +409,7 @@ async function draw2x2GridLayout(
       ctx.fillRect(curBx, bcY, bw, 22);
       curBx += bw + 2;
     }
-    ctx.font = '14px "OngleipParkDahyeon", sans-serif';
+    ctx.font = '16px "OngleipParkDahyeon", sans-serif';
     ctx.fillStyle = theme.subtextColor;
     ctx.textAlign = 'center';
     ctx.fillText('우리들의 소중한 유치원 추억 ★', width / 2, bcY + 36);
