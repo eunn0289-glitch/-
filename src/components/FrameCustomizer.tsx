@@ -33,8 +33,7 @@ interface FrameCustomizerProps {
 }
 
 const CLASS_PRESETS = [
-  '다산새봄유치원 푸름반 🌱',
-  '다산새봄유치원 푸름반',
+  '00유치원 00반',
   '초록초록 새싹반 🌱',
   '행복가득 풀잎반 🍀',
   '알록달록 무지개반 🌈',
@@ -68,7 +67,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
 
   // Configuration state
   const [config, setConfig] = useState<PhotoboothConfig>({
-    className: '다산새봄유치원 푸름반',
+    className: '00유치원 00반',
     dateStr: new Date().toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
@@ -621,7 +620,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
                   value={config.className}
                   maxLength={25}
                   onChange={(e) => setConfig((c) => ({ ...c, className: e.target.value }))}
-                  placeholder="예: 다산새봄유치원 푸름반"
+                  placeholder="예: 00유치원 00반"
                   className="w-full px-4 py-2.5 rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none font-jua text-stone-800 text-lg"
                 />
                 {/* Preset Chips */}

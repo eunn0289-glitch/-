@@ -203,7 +203,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="w-full border-t border-amber-200 bg-white/70 py-4 text-center text-xs font-jua text-amber-900/60 print:hidden">
-        우리들의 소중한 유치원 추억 📸 우리반 네컷 사진관 • 다산새봄유치원 푸름반 어린이 모두 함께해요!
+        우리들의 소중한 유치원 추억 📸 우리반 네컷 사진관 • 00유치원 00반 어린이 모두 함께해요!
       </footer>
     </div>
   );

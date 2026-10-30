@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   우리반 네컷
                 </span>
                 <span className="text-[11px] font-jua px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                  다산새봄유치원
+                  00유치원
                 </span>
               </div>
             </div>
