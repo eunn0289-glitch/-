@@ -37,50 +37,73 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   return (
     <header className="w-full bg-white/95 backdrop-blur-md border-b-4 border-amber-200 sticky top-0 z-40 shadow-xs">
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
-        {/* Brand / Logo + Home Button */}
-        <div className="flex items-center gap-2">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex flex-col md:flex-row items-center justify-between gap-2">
+        {/* Top bar on mobile / Left group on desktop */}
+        <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-2">
+          {/* Brand / Logo */}
           <div
             onClick={onNavigateHome}
             title="홈 화면으로 돌아가기"
-            className="flex items-center gap-2 cursor-pointer group select-none"
+            className="flex items-center gap-2 cursor-pointer group select-none shrink-0"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-400 flex items-center justify-center text-white shadow-md transform group-hover:rotate-6 transition">
-              <Camera className="w-6 h-6" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-400 flex items-center justify-center text-white shadow-md transform group-hover:rotate-6 transition shrink-0">
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-jua text-xl sm:text-2xl text-stone-900 tracking-tight">
-                  우리반 네컷
-                </span>
-                <span className="text-[11px] font-jua px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                  00유치원
-                </span>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-jua text-lg sm:text-2xl text-stone-900 tracking-tight whitespace-nowrap">
+                우리반 네컷
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-jua px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">
+                00유치원
+              </span>
             </div>
           </div>
 
-          {/* Quick Home button */}
-          <button
-            type="button"
-            onClick={() => {
-              playPopSound();
-              onNavigateHome();
-            }}
-            title="처음 화면(홈)으로 이동"
-            className={`px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-1 transition cursor-pointer border ${
-              currentStep === 'ready'
-                ? 'bg-amber-100 border-amber-300 text-amber-900 font-bold'
-                : 'bg-stone-100 hover:bg-stone-200 border-stone-200 text-stone-700'
-            }`}
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>홈으로</span>
-          </button>
+          {/* Home & Sound buttons grouped on mobile right */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound();
+                onNavigateHome();
+              }}
+              title="처음 화면(홈)으로 이동"
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-1 transition cursor-pointer border shrink-0 ${
+                currentStep === 'ready'
+                  ? 'bg-amber-100 border-amber-300 text-amber-900 font-bold'
+                  : 'bg-stone-100 hover:bg-stone-200 border-stone-200 text-stone-700'
+              }`}
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>홈</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound();
+                onToggleSound();
+              }}
+              title={soundState ? '효과음 끄기' : '효과음 켜기'}
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1 text-xs font-jua cursor-pointer shrink-0"
+            >
+              {soundState ? (
+                <>
+                  <Volume2 className="w-4 h-4 text-amber-600" />
+                  <span className="hidden sm:inline">소리 켬</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX className="w-4 h-4 text-stone-400" />
+                  <span className="hidden sm:inline text-stone-500">소리 끔</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Step Navigation & Prev / Next Controls */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="w-full md:w-auto flex items-center justify-between sm:justify-center gap-1 sm:gap-2">
           {/* 이전 단계 버튼 */}
           <button
             type="button"
@@ -90,18 +113,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               onPrevStep();
             }}
             title="이전 단계로 이동"
-            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-1 transition ${
+            className={`px-2 sm:px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-0.5 sm:gap-1 transition shrink-0 ${
               canPrev
                 ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 cursor-pointer shadow-xs active:scale-95'
                 : 'bg-stone-100 text-stone-300 border border-stone-200 cursor-not-allowed opacity-50'
             }`}
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span>이전 단계</span>
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>이전<span className="hidden sm:inline"> 단계</span></span>
           </button>
 
           {/* Clickable 1~5 Step Pills */}
-          <div className="flex items-center gap-1 bg-amber-50 p-1 rounded-2xl border border-amber-200">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-amber-50 p-1 rounded-2xl border border-amber-200">
             {STEPS.map((step) => {
               const isActive = currentStep === step.key;
               return (
@@ -112,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     playPopSound();
                     onStepSelect(step.key);
                   }}
-                  className={`text-xs font-jua px-2 sm:px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 ${
+                  className={`text-xs font-jua px-1.5 sm:px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 shrink-0 ${
                     isActive
                       ? 'bg-amber-500 text-white shadow-xs font-bold scale-102 ring-2 ring-amber-300'
                       : 'text-stone-600 hover:bg-amber-100/70'
@@ -121,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="w-4 h-4 rounded-full bg-black/10 flex items-center justify-center text-[10px]">
                     {step.num}
                   </span>
-                  <span className="hidden md:inline">{step.label}</span>
+                  <span className="hidden lg:inline">{step.label}</span>
                 </button>
               );
             })}
@@ -136,39 +159,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               onNextStep();
             }}
             title="다음 단계로 이동"
-            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-1 transition ${
+            className={`px-2 sm:px-3 py-1.5 rounded-xl font-jua text-xs sm:text-sm flex items-center gap-0.5 sm:gap-1 transition shrink-0 ${
               canNext
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm cursor-pointer active:scale-95'
                 : 'bg-stone-100 text-stone-300 border border-stone-200 cursor-not-allowed opacity-50'
             }`}
           >
-            <span>다음 단계</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Right Controls: Sound Toggle */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              playPopSound();
-              onToggleSound();
-            }}
-            title={soundState ? '효과음 끄기' : '효과음 켜기'}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1 text-xs font-jua cursor-pointer"
-          >
-            {soundState ? (
-              <>
-                <Volume2 className="w-4 h-4 text-amber-600" />
-                <span className="hidden sm:inline">소리 켬</span>
-              </>
-            ) : (
-              <>
-                <VolumeX className="w-4 h-4 text-stone-400" />
-                <span className="hidden sm:inline text-stone-500">소리 끔</span>
-              </>
-            )}
+            <span>다음<span className="hidden sm:inline"> 단계</span></span>
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

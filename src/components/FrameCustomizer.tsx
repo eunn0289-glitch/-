@@ -269,32 +269,32 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
       <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Canvas Live Preview (5 columns on desktop) */}
         <div className="lg:col-span-5 flex flex-col items-center w-full">
-          <div className="w-full bg-amber-100/60 p-4 rounded-3xl border-2 border-amber-200 flex flex-col items-center">
-            <div className="w-full flex items-center justify-between mb-3 px-2">
-              <span className="font-jua text-amber-900 text-base flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-500" /> 실시간 네컷 미리보기
+          <div className="w-full bg-amber-100/60 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border-2 border-amber-200 flex flex-col items-center">
+            <div className="w-full flex items-center justify-between mb-2 sm:mb-3 px-1 sm:px-2">
+              <span className="font-jua text-amber-900 text-sm sm:text-base flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" /> 실시간 네컷 미리보기
               </span>
-              <span className="text-xs font-jua text-amber-700 bg-white px-2.5 py-1 rounded-full shadow-xs">
+              <span className="text-[11px] sm:text-xs font-jua text-amber-700 bg-white px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-xs">
                 {config.layout === 'strip-2' ? '1+1 나눔형' : config.layout === 'strip-1' ? '1컷 단독형' : '2x2 네모형'}
               </span>
             </div>
 
-            {/* Canvas Container with Interactive Draggable Sticker Overlay */}
+            {/* Canvas Container with Interactive Draggable Sticker Overlay (touch-none enabled for smooth mobile drag) */}
             <div
               ref={previewWrapperRef}
               onClick={handleContainerClick}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
-              className="relative w-full max-w-full max-h-[640px] overflow-hidden rounded-2xl shadow-xl border-4 border-white cursor-crosshair bg-stone-100 flex items-center justify-center p-2 transition-all select-none"
+              className="relative w-full max-w-full max-h-[55vh] sm:max-h-[640px] overflow-hidden rounded-xl sm:rounded-2xl shadow-xl border-3 sm:border-4 border-white cursor-crosshair bg-stone-100 flex items-center justify-center p-1.5 sm:p-2 transition-all select-none touch-none"
             >
               {/* Canvas output */}
               <canvas
                 ref={canvasRef}
-                className="max-h-[580px] max-w-full w-auto h-auto object-contain block rounded-lg shadow-sm pointer-events-none"
+                className="max-h-[50vh] sm:max-h-[580px] max-w-full w-auto h-auto object-contain block rounded-lg shadow-sm pointer-events-none"
               />
 
               {/* Interactive Placed Stickers Overlay */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden m-2">
+              <div className="absolute inset-0 pointer-events-none overflow-hidden m-1.5 sm:m-2 touch-none">
                 {stickers.map((s) => {
                   const isSelected = selectedStickerId === s.id;
                   const isDragging = draggingStickerId === s.id;
@@ -311,8 +311,9 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
                         left: `${s.x}%`,
                         top: `${s.y}%`,
                         transform: `translate(-50%, -50%) rotate(${s.rotation}deg)`,
+                        touchAction: 'none',
                       }}
-                      className={`absolute pointer-events-auto cursor-grab active:cursor-grabbing transition-transform select-none ${
+                      className={`absolute pointer-events-auto cursor-grab active:cursor-grabbing transition-transform select-none touch-none ${
                         isDragging ? 'scale-110 z-30 opacity-90' : isSelected ? 'z-20' : 'z-10'
                       }`}
                     >
@@ -408,7 +409,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
         {/* Right: Customization Controls (7 columns on desktop) */}
         <div className="lg:col-span-7 bg-white rounded-3xl p-5 md:p-6 shadow-md border-4 border-amber-200">
           {/* Navigation Tabs */}
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 p-1.5 bg-amber-50 rounded-2xl mb-6">
+          <div className="grid grid-cols-4 gap-1 sm:gap-2 p-1 sm:p-1.5 bg-amber-50 rounded-2xl mb-4 sm:mb-6">
             <button
               type="button"
               onClick={() => setActiveTab('frame')}
@@ -419,7 +420,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
               }`}
             >
               <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="truncate whitespace-nowrap">프레임 테마</span>
+              <span className="truncate whitespace-nowrap"><span className="sm:hidden">테마</span><span className="hidden sm:inline">프레임 테마</span></span>
             </button>
 
             <button
@@ -432,7 +433,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
               }`}
             >
               <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="truncate whitespace-nowrap">사진 필터</span>
+              <span className="truncate whitespace-nowrap"><span className="sm:hidden">필터</span><span className="hidden sm:inline">사진 필터</span></span>
             </button>
 
             <button
@@ -445,7 +446,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
               }`}
             >
               <Type className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="truncate whitespace-nowrap tracking-tight">반이름·문구</span>
+              <span className="truncate whitespace-nowrap tracking-tight"><span className="sm:hidden">문구</span><span className="hidden sm:inline">반이름·문구</span></span>
             </button>
 
             <button
@@ -458,33 +459,33 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
               }`}
             >
               <Stamp className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-              <span className="truncate whitespace-nowrap tracking-tight">소품·스탬프</span>
+              <span className="truncate whitespace-nowrap tracking-tight"><span className="sm:hidden">도장</span><span className="hidden sm:inline">소품·스탬프</span></span>
             </button>
           </div>
 
           {/* TAB 1: FRAME THEMES & LAYOUT */}
           {activeTab === 'frame' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Layout Picker */}
               <div>
-                <label className="block font-jua text-stone-700 text-base mb-2">
+                <label className="block font-jua text-stone-700 text-sm sm:text-base mb-1.5 sm:mb-2">
                   사진 레이아웃 선택
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => {
                       playPopSound();
                       setConfig((c) => ({ ...c, layout: 'strip-2' }));
                     }}
-                    className={`p-3 rounded-2xl border-2 text-center transition cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-center transition cursor-pointer ${
                       config.layout === 'strip-2'
                         ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-300'
                         : 'border-stone-200 hover:bg-stone-50 text-stone-600'
                     }`}
                   >
-                    <div className="text-xl mb-1">👯 1+1 트윈컷</div>
-                    <div className="font-jua text-sm">친구와 한 장씩! (기본)</div>
+                    <div className="text-base sm:text-xl mb-0.5 sm:mb-1">👯 1+1 트윈</div>
+                    <div className="font-jua text-xs sm:text-sm">친구와 한 장씩!</div>
                   </button>
 
                   <button
@@ -493,14 +494,14 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
                       playPopSound();
                       setConfig((c) => ({ ...c, layout: 'strip-1' }));
                     }}
-                    className={`p-3 rounded-2xl border-2 text-center transition cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-center transition cursor-pointer ${
                       config.layout === 'strip-1'
                         ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-300'
                         : 'border-stone-200 hover:bg-stone-50 text-stone-600'
                     }`}
                   >
-                    <div className="text-xl mb-1">🎞️ 세로 1줄</div>
-                    <div className="font-jua text-sm">클래식 4컷 스트립</div>
+                    <div className="text-base sm:text-xl mb-0.5 sm:mb-1">🎞️ 세로 1줄</div>
+                    <div className="font-jua text-xs sm:text-sm">클래식 4컷</div>
                   </button>
 
                   <button
@@ -509,14 +510,14 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
                       playPopSound();
                       setConfig((c) => ({ ...c, layout: 'grid-2x2' }));
                     }}
-                    className={`p-3 rounded-2xl border-2 text-center transition cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-center transition cursor-pointer ${
                       config.layout === 'grid-2x2'
                         ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-300'
                         : 'border-stone-200 hover:bg-stone-50 text-stone-600'
                     }`}
                   >
-                    <div className="text-xl mb-1">🖼️ 2x2 네모컷</div>
-                    <div className="font-jua text-sm">엽서 & 액자 스타일</div>
+                    <div className="text-base sm:text-xl mb-0.5 sm:mb-1">🖼️ 2x2 네모</div>
+                    <div className="font-jua text-xs sm:text-sm">액자 스타일</div>
                   </button>
                 </div>
               </div>
@@ -898,11 +899,11 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
           )}
 
           {/* Bottom Action Footer with Clear Prev / Next Buttons */}
-          <div className="mt-8 pt-4 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-6 sm:mt-8 pt-4 border-t border-stone-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
             <button
               type="button"
               onClick={onBackToSelect}
-              className="px-5 py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-jua text-base transition flex items-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-jua text-sm sm:text-base transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>3단계: 사진 다시 고르기</span>
@@ -911,7 +912,7 @@ export const FrameCustomizer: React.FC<FrameCustomizerProps> = ({
             <button
               type="button"
               onClick={handleFinish}
-              className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-600 hover:to-orange-500 text-white font-jua text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-amber-300 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-lg sm:text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-amber-300 cursor-pointer"
             >
               <span>5단계: 완성 및 인쇄하기</span>
               <ChevronRight className="w-5 h-5" />

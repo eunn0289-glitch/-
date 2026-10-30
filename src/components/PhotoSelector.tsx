@@ -64,35 +64,38 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
+    <div className="w-full max-w-5xl mx-auto flex flex-col items-center px-1 sm:px-2">
       {/* Header Guidance */}
-      <div className="w-full bg-white rounded-3xl p-5 md:p-6 shadow-md border-4 border-amber-200 mb-6 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-amber-100 text-amber-900 font-jua text-sm mb-2">
-          <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+      <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-md border-3 sm:border-4 border-amber-200 mb-4 sm:mb-6 text-center">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 rounded-full bg-amber-100 text-amber-900 font-jua text-xs sm:text-sm mb-1.5 sm:mb-2">
+          <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 fill-rose-500" />
           <span>5장 중 가장 예쁘고 신난 사진 4장을 골라주세요!</span>
         </div>
-        <h2 className="text-2xl md:text-3xl font-jua text-stone-800">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-jua text-stone-800 break-keep">
           우리반 베스트 4컷 사진 고르기 ({selectedIds.length} / 4장 선택됨)
         </h2>
-        <p className="text-stone-600 font-gaegu text-xl mt-1">
-          사진을 클릭하면 선택되거나 해제돼요. 번호 순서대로 네컷에 쏙 들어가요! ✨
+        <p className="text-stone-600 font-gaegu text-lg sm:text-xl mt-1 break-keep">
+          사진을 터치하면 선택되거나 해제돼요. 번호 순서대로 네컷에 쏙 들어가요! ✨
         </p>
       </div>
 
       {/* 5 Photos Gallery Grid */}
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-5 mb-8">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-4 md:gap-5 mb-6 sm:mb-8">
         {capturedPhotos.map((photo, index) => {
           const selectionIndex = selectedIds.indexOf(photo.id);
           const isSelected = selectionIndex !== -1;
+          const isLastOdd = index === 4;
 
           return (
             <div
               key={photo.id}
               onClick={() => handleToggleSelect(photo.id)}
               className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 transform ${
+                isLastOdd ? 'col-span-2 sm:col-span-1 max-w-xs mx-auto w-full' : ''
+              } ${
                 isSelected
-                  ? 'ring-6 ring-amber-400 shadow-xl scale-[1.02] bg-amber-50'
-                  : 'opacity-70 hover:opacity-100 hover:scale-[1.01] bg-stone-100 shadow'
+                  ? 'ring-4 sm:ring-6 ring-amber-400 shadow-xl scale-[1.02] bg-amber-50'
+                  : 'opacity-75 hover:opacity-100 hover:scale-[1.01] bg-stone-100 shadow'
               }`}
             >
               {/* Aspect box */}
@@ -104,7 +107,7 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                 />
 
                 {/* Shot tag */}
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/60 text-white font-jua text-xs">
+                <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-1.5 sm:px-2 py-0.5 rounded-md bg-black/60 text-white font-jua text-[10px] sm:text-xs">
                   {index + 1}번 컷
                 </div>
 
@@ -116,40 +119,40 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                     setPreviewPhoto(photo);
                   }}
                   title="크게 보기"
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-xs transition"
+                  className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-xs transition"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
 
               {/* Selection Badge Header */}
-              <div className="p-3 bg-white flex items-center justify-between">
+              <div className="p-2 sm:p-2.5 md:p-3 bg-white flex items-center justify-between">
                 {isSelected ? (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-7 h-7 rounded-full bg-amber-500 text-white font-jua flex items-center justify-center text-sm shadow">
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-amber-500 text-white font-jua flex items-center justify-center text-xs sm:text-sm shadow">
                       {selectionIndex + 1}
                     </div>
-                    <span className="font-jua text-amber-800 text-sm">
+                    <span className="font-jua text-amber-800 text-xs sm:text-sm whitespace-nowrap">
                       {selectionIndex + 1}번째 컷
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 text-stone-400">
-                    <div className="w-7 h-7 rounded-full border-2 border-stone-300 flex items-center justify-center text-sm">
+                  <div className="flex items-center gap-1 text-stone-400">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-stone-300 flex items-center justify-center text-xs sm:text-sm">
                       +
                     </div>
-                    <span className="font-jua text-xs">선택하기</span>
+                    <span className="font-jua text-[11px] sm:text-xs whitespace-nowrap">선택하기</span>
                   </div>
                 )}
 
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition ${
+                  className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 transition shrink-0 ${
                     isSelected
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : 'border-stone-300'
                   }`}
                 >
-                  {isSelected && <Check className="w-4 h-4" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 </div>
               </div>
             </div>
@@ -158,20 +161,20 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
       </div>
 
       {/* Selected Order Strip Preview */}
-      <div className="w-full bg-white rounded-3xl p-5 border-2 border-amber-200 shadow-sm mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-500" />
-            <h3 className="font-jua text-lg text-stone-800">
+      <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border-2 border-amber-200 shadow-sm mb-6 sm:mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
+            <h3 className="font-jua text-base sm:text-lg text-stone-800">
               네컷에 들어갈 사진 순서 (위에서부터 아래로)
             </h3>
           </div>
-          <span className="text-sm font-jua text-amber-700 bg-amber-100 px-3 py-1 rounded-full">
+          <span className="text-xs sm:text-sm font-jua text-amber-700 bg-amber-100 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full">
             {selectedIds.length === 4 ? '4장 선택 완료! 🎉' : `${4 - selectedIds.length}장 더 골라주세요`}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           {[0, 1, 2, 3].map((slotIdx) => {
             const photoId = selectedIds[slotIdx];
             const photo = capturedPhotos.find((p) => p.id === photoId);
@@ -179,17 +182,17 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
             return (
               <div
                 key={slotIdx}
-                className="relative rounded-2xl border-2 border-dashed border-amber-300 p-2 flex flex-col items-center bg-amber-50/50 min-h-[140px] justify-center"
+                className="relative rounded-2xl border-2 border-dashed border-amber-300 p-1.5 sm:p-2 flex flex-col items-center bg-amber-50/50 min-h-[130px] justify-center"
               >
                 {photo ? (
                   <div className="w-full flex flex-col items-center">
-                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm mb-2">
+                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm mb-1.5">
                       <img
                         src={photo.dataUrl}
                         alt={`선택된 컷 ${slotIdx + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-amber-500 text-white font-jua text-xs flex items-center justify-center shadow">
+                      <div className="absolute top-1 left-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-500 text-white font-jua text-[10px] sm:text-xs flex items-center justify-center shadow">
                         {slotIdx + 1}
                       </div>
                     </div>
@@ -199,26 +202,26 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                         type="button"
                         disabled={slotIdx === 0}
                         onClick={() => handleMoveOrder(slotIdx, 'up')}
-                        className="text-xs px-2 py-0.5 rounded bg-white hover:bg-stone-100 disabled:opacity-30 font-jua border border-stone-200"
+                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-white hover:bg-stone-100 disabled:opacity-30 font-jua border border-stone-200 cursor-pointer"
                       >
-                        ◀ 앞으로
+                        ◀ 앞
                       </button>
                       <button
                         type="button"
                         disabled={slotIdx === selectedIds.length - 1}
                         onClick={() => handleMoveOrder(slotIdx, 'down')}
-                        className="text-xs px-2 py-0.5 rounded bg-white hover:bg-stone-100 disabled:opacity-30 font-jua border border-stone-200"
+                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-white hover:bg-stone-100 disabled:opacity-30 font-jua border border-stone-200 cursor-pointer"
                       >
-                        뒤로 ▶
+                        뒤 ▶
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center text-stone-400 p-4">
-                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-stone-300 mx-auto flex items-center justify-center font-jua mb-1">
+                  <div className="text-center text-stone-400 p-2 sm:p-4">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-dashed border-stone-300 mx-auto flex items-center justify-center font-jua mb-1 text-xs">
                       {slotIdx + 1}
                     </div>
-                    <span className="font-jua text-xs">사진을 골라주세요</span>
+                    <span className="font-jua text-[11px] sm:text-xs">사진을 골라주세요</span>
                   </div>
                 )}
               </div>
@@ -228,13 +231,13 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between w-full gap-4">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between w-full gap-3">
         <button
           type="button"
           onClick={onRetake}
-          className="px-6 py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-lg transition flex items-center gap-2 cursor-pointer"
+          className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-base sm:text-lg transition flex items-center justify-center gap-2 cursor-pointer"
         >
-          <RotateCcw className="w-5 h-5" />
+          <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
           <span>이전 단계 (다시 촬영하기)</span>
         </button>
 
@@ -242,14 +245,14 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
           type="button"
           disabled={!isComplete}
           onClick={handleConfirm}
-          className={`px-8 py-4 rounded-3xl font-jua text-xl md:text-2xl shadow-xl transition-all flex items-center gap-3 border-4 ${
+          className={`w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-3xl font-jua text-lg sm:text-xl md:text-2xl shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 border-3 sm:border-4 ${
             isComplete
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300 hover:scale-105 active:scale-95 cursor-pointer'
               : 'bg-stone-300 text-stone-500 border-stone-200 cursor-not-allowed'
           }`}
         >
           <span>다음 단계 (프레임 꾸미기) 🎨</span>
-          <ArrowRight className="w-6 h-6" />
+          <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
 

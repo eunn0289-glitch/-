@@ -315,14 +315,14 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
+    <div className="w-full max-w-4xl mx-auto flex flex-col items-center px-1 sm:px-2">
       {/* Top Banner / Guidance */}
-      <div className="w-full bg-white rounded-3xl p-4 md:p-6 shadow-md border-4 border-amber-200 mb-4 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 text-amber-900 font-jua text-sm md:text-base mb-2">
-          <Sparkles className="w-4 h-4 text-amber-500 animate-spin" />
+      <div className="w-full bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 shadow-md border-3 sm:border-4 border-amber-200 mb-3 sm:mb-4 text-center">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 rounded-full bg-amber-100 text-amber-900 font-jua text-xs sm:text-sm md:text-base mb-1.5 sm:mb-2">
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 animate-spin" />
           <span>총 5장의 사진을 연속으로 찰칵! 찍어요</span>
         </div>
-        <h2 className="text-2xl md:text-3xl font-jua text-stone-800">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-jua text-stone-800 break-keep">
           {isShooting ? (
             <span className="text-amber-600">
               [{currentShotIndex + 1} / 5번째 사진] {POSE_HINTS[currentShotIndex]?.pose}
@@ -335,7 +335,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             '카메라를 보며 신나는 포즈를 준비해주세요!'
           )}
         </h2>
-        <p className="text-stone-600 font-gaegu text-xl mt-1">
+        <p className="text-stone-600 font-gaegu text-lg sm:text-xl mt-1 break-keep">
           {isShooting
             ? POSE_HINTS[currentShotIndex]?.tip
             : isPaused
@@ -345,7 +345,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
       </div>
 
       {/* Main Camera Viewfinder Card */}
-      <div className="relative w-full max-w-2xl aspect-[4/3] bg-stone-900 rounded-3xl overflow-hidden shadow-2xl border-8 border-amber-300 flex items-center justify-center">
+      <div className="relative w-full max-w-2xl aspect-[4/3] bg-stone-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 sm:border-8 border-amber-300 flex items-center justify-center">
         {/* Flash overlay */}
         {isFlashing && (
           <div className="absolute inset-0 bg-white z-50 animate-flash pointer-events-none" />
@@ -364,27 +364,27 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
         {/* Camera permission error or disabled */}
         {hasPermission === false && (
-          <div className="absolute inset-0 bg-stone-900/90 text-white flex flex-col items-center justify-center p-6 text-center z-20">
-            <AlertCircle className="w-16 h-16 text-amber-400 mb-3" />
-            <h3 className="text-2xl font-jua mb-2">카메라를 불러올 수 없어요</h3>
-            <p className="text-stone-300 font-sans text-sm max-w-md mb-6">{errorMessage}</p>
+          <div className="absolute inset-0 bg-stone-900/90 text-white flex flex-col items-center justify-center p-4 sm:p-6 text-center z-20">
+            <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-amber-400 mb-2 sm:mb-3" />
+            <h3 className="text-xl sm:text-2xl font-jua mb-1 sm:mb-2">카메라를 불러올 수 없어요</h3>
+            <p className="text-stone-300 font-sans text-xs sm:text-sm max-w-md mb-4 sm:mb-6">{errorMessage}</p>
 
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-2.5 sm:gap-3 justify-center">
               <button
                 type="button"
                 onClick={startCamera}
-                className="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-jua flex items-center gap-2 transition"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-jua text-xs sm:text-sm flex items-center gap-2 transition"
               >
                 <RefreshCw className="w-4 h-4" /> 다시 시도
               </button>
               <button
                 type="button"
                 onClick={runSampleShoot}
-                className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua flex items-center gap-2 transition shadow-lg"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-xs sm:text-sm flex items-center gap-2 transition shadow-lg"
               >
                 <Sparkles className="w-4 h-4" /> 귀여운 샘플로 촬영하기
               </button>
-              <label className="px-5 py-2.5 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-jua flex items-center gap-2 transition cursor-pointer shadow-lg">
+              <label className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-jua text-xs sm:text-sm flex items-center gap-2 transition cursor-pointer shadow-lg">
                 <Upload className="w-4 h-4" /> 사진 5장 올리기
                 <input
                   type="file"
@@ -398,11 +398,11 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
           </div>
         )}
 
-        {/* Cute Face Guide Overlay (Optional visual aid for children) */}
+        {/* Cute Face Guide Overlay */}
         {!isShooting && hasPermission && (
-          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center border-4 border-dashed border-white/40 m-8 rounded-3xl">
-            <div className="w-48 h-56 rounded-full border-4 border-amber-300/60 flex items-center justify-center bg-amber-400/10">
-              <span className="font-jua text-white/90 text-lg bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
+          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center border-2 sm:border-4 border-dashed border-white/40 m-4 sm:m-8 rounded-2xl sm:rounded-3xl">
+            <div className="w-36 h-44 sm:w-48 sm:h-56 rounded-full border-3 sm:border-4 border-amber-300/60 flex items-center justify-center bg-amber-400/10">
+              <span className="font-jua text-white/90 text-sm sm:text-base md:text-lg bg-black/40 px-2.5 sm:px-3 py-1 rounded-full backdrop-blur-sm">
                 여기에 쏙 들어가요 😊
               </span>
             </div>
@@ -411,28 +411,28 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
         {/* Huge Animated 3-2-1 Countdown Overlay */}
         {isShooting && countdown !== null && countdown > 0 && (
-          <div className="absolute inset-0 bg-black/25 flex flex-col items-center justify-center z-30">
+          <div className="absolute inset-0 bg-black/25 flex flex-col items-center justify-center z-30 p-2">
             <div className="relative flex items-center justify-center">
-              <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-2xl border-4 border-white animate-pulse-ring">
-                <span className="font-jua text-white text-7xl md:text-8xl drop-shadow-lg scale-110 transform transition-transform">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-2xl border-4 border-white animate-pulse-ring">
+                <span className="font-jua text-white text-6xl sm:text-7xl md:text-8xl drop-shadow-lg scale-110 transform transition-transform">
                   {countdown}
                 </span>
               </div>
             </div>
-            <div className="mt-6 px-6 py-2 rounded-full bg-white/95 text-stone-800 font-jua text-xl md:text-2xl shadow-xl flex items-center gap-2">
-              <span>{POSE_HINTS[currentShotIndex]?.pose}</span>
+            <div className="mt-4 sm:mt-6 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white/95 text-stone-800 font-jua text-base sm:text-xl md:text-2xl shadow-xl flex items-center gap-2 max-w-[90%] text-center">
+              <span className="truncate">{POSE_HINTS[currentShotIndex]?.pose}</span>
             </div>
           </div>
         )}
 
         {/* Between Shots Message */}
         {betweenDelay && (
-          <div className="absolute inset-0 bg-amber-500/80 backdrop-blur-xs flex flex-col items-center justify-center text-white z-30">
-            <div className="text-5xl mb-3 animate-bounce">✨ 찰칵 완료! ✨</div>
-            <div className="text-2xl font-jua">
+          <div className="absolute inset-0 bg-amber-500/85 backdrop-blur-xs flex flex-col items-center justify-center text-white z-30 p-4 text-center">
+            <div className="text-3xl sm:text-5xl mb-2 sm:mb-3 animate-bounce">✨ 찰칵 완료! ✨</div>
+            <div className="text-xl sm:text-2xl font-jua">
               다음은 <span className="underline decoration-white decoration-wavy font-bold">[{currentShotIndex + 2}번째]</span> 사진이에요!
             </div>
-            <p className="font-gaegu text-xl mt-2 text-amber-100">
+            <p className="font-gaegu text-lg sm:text-xl mt-1.5 text-amber-100">
               {POSE_HINTS[currentShotIndex + 1]?.pose} 준비해주세요~!
             </p>
           </div>
@@ -440,29 +440,29 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
 
         {/* Paused Overlay */}
         {isPaused && (
-          <div className="absolute inset-0 bg-stone-900/85 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-30">
-            <div className="w-16 h-16 rounded-full bg-amber-400/20 border-2 border-amber-400 flex items-center justify-center text-amber-300 text-3xl mb-3">
+          <div className="absolute inset-0 bg-stone-900/85 backdrop-blur-xs flex flex-col items-center justify-center p-4 sm:p-6 text-center z-30">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-amber-400/20 border-2 border-amber-400 flex items-center justify-center text-amber-300 text-2xl sm:text-3xl mb-2 sm:mb-3">
               ⏸️
             </div>
-            <h3 className="text-2xl font-jua text-white mb-1">
+            <h3 className="text-xl sm:text-2xl font-jua text-white mb-1">
               촬영이 잠시 멈췄어요
             </h3>
-            <p className="text-stone-300 font-sans text-sm mb-5">
+            <p className="text-stone-300 font-sans text-xs sm:text-sm mb-4">
               지금까지 <span className="text-amber-400 font-bold font-jua">{capturedPhotos.length}장</span>의 사진이 안전하게 저장되어 있어요!
             </p>
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center w-full max-w-sm sm:max-w-none">
               <button
                 type="button"
                 onClick={handleResumeShooting}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-lg shadow-lg flex items-center gap-2 transition hover:scale-105 active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-base sm:text-lg shadow-lg flex items-center justify-center gap-2 transition hover:scale-105 active:scale-95 cursor-pointer"
               >
-                <Play className="w-5 h-5 fill-white" />
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
                 <span>이어서 {capturedPhotos.length + 1}번째 컷 찍기</span>
               </button>
               <button
                 type="button"
                 onClick={handleResetShoot}
-                className="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-stone-200 font-jua text-sm flex items-center gap-2 transition cursor-pointer"
+                className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-stone-200 font-jua text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>처음부터 다시 찍기</span>
@@ -471,7 +471,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
                 <button
                   type="button"
                   onClick={() => onAllPhotosCaptured(capturedPhotos)}
-                  className="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-sm flex items-center gap-2 transition shadow-md cursor-pointer"
+                  className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow-md cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>지금 사진들로 바로 4장 고르기</span>
@@ -484,29 +484,29 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
         {/* Camera Control Overlays (Top Right & Left) */}
         {!isShooting && hasPermission && (
           <>
-            <div className="absolute top-4 right-4 flex gap-2 z-10">
+            <div className="absolute top-2.5 sm:top-4 right-2.5 sm:right-4 flex gap-1.5 sm:gap-2 z-10">
               <button
                 type="button"
                 onClick={toggleFacingMode}
                 title="카메라 전환"
-                className="p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition"
+                className="p-2 sm:p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition min-w-[38px] min-h-[38px] flex items-center justify-center cursor-pointer"
               >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsMirrored((prev) => !prev)}
                 title="좌우 반전"
-                className={`p-3 rounded-full backdrop-blur-sm transition ${
-                  isMirrored ? 'bg-amber-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full backdrop-blur-sm transition flex items-center justify-center cursor-pointer ${
+                  isMirrored ? 'bg-amber-500 text-white font-bold' : 'bg-black/50 text-white hover:bg-black/70'
                 }`}
               >
-                <span className="font-jua text-xs">좌우반전</span>
+                <span className="font-jua text-[11px] sm:text-xs whitespace-nowrap">좌우반전</span>
               </button>
             </div>
 
-            <div className="absolute top-4 left-4 z-10 bg-amber-400/90 text-amber-950 font-jua text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+            <div className="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 z-10 bg-amber-400/90 text-amber-950 font-jua text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 shadow">
+              <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-ping" />
               <span>촬영 대기 중</span>
             </div>
           </>
@@ -514,9 +514,9 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
       </div>
 
       {/* Mini Progress Dots of 5 Shots */}
-      <div className="w-full max-w-2xl mt-4 bg-white p-3 rounded-2xl shadow-sm border-2 border-amber-100 flex items-center justify-between">
-        <span className="text-sm font-jua text-stone-600">촬영 진행도:</span>
-        <div className="flex items-center gap-2">
+      <div className="w-full max-w-2xl mt-3 sm:mt-4 bg-white p-2.5 sm:p-3 rounded-2xl shadow-sm border-2 border-amber-100 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs sm:text-sm font-jua text-stone-600">촬영 진행도:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {[0, 1, 2, 3, 4].map((idx) => {
             const isDone = capturedPhotos.length > idx;
             const isCurrent = isShooting && currentShotIndex === idx;
@@ -524,55 +524,55 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             return (
               <div
                 key={idx}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center font-jua text-sm transition-all ${
+                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center font-jua text-xs sm:text-sm transition-all ${
                   isDone
                     ? 'bg-emerald-500 text-white shadow-sm'
                     : isCurrent
-                    ? 'bg-amber-500 text-white ring-4 ring-amber-200 animate-pulse'
+                    ? 'bg-amber-500 text-white ring-3 ring-amber-200 animate-pulse'
                     : 'bg-stone-100 text-stone-400 border border-stone-200'
                 }`}
               >
-                {isDone ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                {isDone ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> : idx + 1}
               </div>
             );
           })}
         </div>
-        <span className="text-xs font-jua text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg">
+        <span className="text-[11px] sm:text-xs font-jua text-amber-700 bg-amber-50 px-2 sm:px-2.5 py-1 rounded-lg">
           {capturedPhotos.length} / 5장 완료
         </span>
       </div>
 
       {/* Bottom Main Action Button */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+      <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
         {isShooting ? (
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 font-jua text-base flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
-              <span>사진 촬영이 진행 중입니다... ({currentShotIndex + 1}/5번째 컷)</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 w-full">
+            <div className="px-4 py-2.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 font-jua text-sm sm:text-base flex items-center gap-2 text-center">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+              <span>촬영 진행 중 ({currentShotIndex + 1}/5번째 컷)</span>
             </div>
             <button
               type="button"
               onClick={handlePauseShooting}
-              className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-jua text-base shadow-md transition flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-jua text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Pause className="w-4 h-4" />
               <span>촬영 멈추기 (잠시 멈춤)</span>
             </button>
           </div>
         ) : isPaused ? (
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
             <button
               type="button"
               onClick={handleResumeShooting}
-              className="px-8 py-4 rounded-3xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-xl md:text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-4 border-amber-200 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-3xl bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-jua text-lg sm:text-xl md:text-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 sm:gap-3 border-3 sm:border-4 border-amber-200 cursor-pointer"
             >
-              <Play className="w-6 h-6 fill-white" />
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />
               <span>이어서 촬영하기 ({capturedPhotos.length + 1} / 5번째 컷)</span>
             </button>
             <button
               type="button"
               onClick={handleResetShoot}
-              className="px-5 py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-base transition flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-2xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-jua text-sm sm:text-base transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>처음부터 다시 찍기</span>
@@ -581,7 +581,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
               <button
                 type="button"
                 onClick={() => onAllPhotosCaptured(capturedPhotos)}
-                className="px-5 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-base shadow-md transition flex items-center gap-2 hover:scale-105 cursor-pointer"
+                className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-jua text-sm sm:text-base shadow-md transition flex items-center justify-center gap-2 hover:scale-105 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>선택하러 가기 (4장 완료)</span>
@@ -589,25 +589,25 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             )}
           </div>
         ) : (
-          <>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
             <button
               type="button"
               onClick={startPhotoshootSequence}
-              className="px-8 py-4 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-jua text-2xl md:text-3xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-4 border-amber-200 cursor-pointer"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-3xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-jua text-xl sm:text-2xl md:text-3xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 sm:gap-3 border-3 sm:border-4 border-amber-200 cursor-pointer"
             >
-              <Camera className="w-8 h-8" />
+              <Camera className="w-6 h-6 sm:w-8 sm:h-8" />
               <span>사진 촬영 시작하기! (총 5장)</span>
             </button>
 
             <button
               type="button"
               onClick={runSampleShoot}
-              className="px-5 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-jua text-sm md:text-base transition flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-jua text-xs sm:text-sm md:text-base transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>샘플 사진으로 테스트</span>
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

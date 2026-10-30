@@ -161,7 +161,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 md:py-8 flex flex-col items-center justify-center">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-2.5 sm:px-4 py-3 sm:py-6 md:py-8 flex flex-col items-center justify-center overflow-x-hidden">
         {step === 'ready' && (
           <WelcomeHero
             onStart={handleStartShoot}
@@ -202,7 +202,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-amber-200 bg-white/70 py-4 text-center text-xs font-jua text-amber-900/60 print:hidden">
+      <footer className="w-full border-t border-amber-200 bg-white/70 py-3 sm:py-4 px-3 text-center text-[11px] sm:text-xs font-jua text-amber-900/60 print:hidden break-keep">
         우리들의 소중한 유치원 추억 📸 우리반 네컷 사진관 • 00유치원 00반 어린이 모두 함께해요!
       </footer>
     </div>

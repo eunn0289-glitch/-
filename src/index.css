@@ -8,9 +8,17 @@
   font-display: swap;
 }
 
-/* Force all text elements, inputs, buttons, and components to use OngleipParkDahyeon and increase font size by 2pt */
+/* Base font sizing with mobile viewport calibration */
 html {
   font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
 }
 
 *,
