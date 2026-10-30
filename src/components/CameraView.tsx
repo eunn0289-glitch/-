@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, RefreshCw, Sparkles, AlertCircle, Upload, CheckCircle2, Pause, Play, RotateCcw } from 'lucide-react';
+import { Camera, RefreshCw, Sparkles, AlertCircle, Upload, CheckCircle2, Pause, Play, RotateCcw, ZoomIn } from 'lucide-react';
 import { CapturedPhoto } from '../types';
 import { playCountdownBeep, playShutterSound, playVictoryChime } from '../utils/sound';
 import { generateSamplePhotoDataUrl } from '../utils/sampleGenerator';
@@ -17,6 +17,50 @@ const POSE_HINTS = [
   { pose: '😜 개구쟁이 귀여운 자유 포즈', tip: '가장 자신있는 나만의 포즈를 뽐내봐요!' },
 ];
 
+// Helper to find the standard 1x native camera device
+const findBestCameraDeviceId = (devices: MediaDeviceInfo[], targetFacing: 'user' | 'environment'): string | undefined => {
+  const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+  if (videoInputs.length === 0) return undefined;
+
+  if (targetFacing === 'user') {
+    const front = videoInputs.find((d) => {
+      const lbl = d.label.toLowerCase();
+      return lbl.includes('front') || lbl.includes('user') || lbl.includes('전면') || lbl.includes('내면');
+    });
+    return front?.deviceId || videoInputs[0]?.deviceId;
+  }
+
+  // Environment (Rear / Back) camera:
+  // Identify the standard 1x main camera:
+  // Avoid ultra-wide (0.5x, 'ultra'), telephoto (3x/5x, 'telephoto', 'zoom'), macro, virtual/depth
+  const backDevices = videoInputs.filter((d) => {
+    const lbl = d.label.toLowerCase();
+    return !lbl.includes('front') && !lbl.includes('user') && !lbl.includes('전면');
+  });
+
+  if (backDevices.length === 0) {
+    return videoInputs[0]?.deviceId;
+  }
+
+  // Priority scoring for back cameras to lock onto the 1.0x native standard lens
+  const scored = backDevices.map((d) => {
+    const lbl = d.label.toLowerCase();
+    let score = 50;
+    // Strong penalties for non-standard lenses:
+    if (lbl.includes('ultra') || lbl.includes('0.5') || lbl.includes('super wide')) score -= 100;
+    if (lbl.includes('tele') || lbl.includes('zoom') || lbl.includes('telephoto')) score -= 80;
+    if (lbl.includes('macro') || lbl.includes('depth') || lbl.includes('virtual')) score -= 90;
+    // Bonuses for standard main camera:
+    if (lbl.includes('main') || lbl.includes('primary') || lbl.includes('standard')) score += 40;
+    if (lbl.includes('camera 0') || lbl.includes('camera2 0') || lbl.includes('back 0') || lbl.includes('rear 0')) score += 30;
+    if (lbl.includes('wide') && !lbl.includes('ultra')) score += 15;
+    return { deviceId: d.deviceId, score, label: d.label };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0]?.deviceId;
+};
+
 export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onCancel }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -25,6 +69,12 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [isMirrored, setIsMirrored] = useState(true);
+
+  // Multi-camera & standard 1x zoom states
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [currentZoom, setCurrentZoom] = useState<number>(1.0);
+  const [zoomCapabilities, setZoomCapabilities] = useState<{ min: number; max: number; step: number } | null>(null);
 
   // Shooting state
   const [isShooting, setIsShooting] = useState(false);
@@ -42,58 +92,210 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
   const finishTimeoutRef = useRef<number | null>(null);
   const isCancelledRef = useRef<boolean>(false);
 
-  // Start webcam
-  const startCamera = useCallback(async () => {
-    try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      setErrorMessage('');
+  // Start webcam with standard 1x native ratio (4:3) and primary lens selection
+  const startCamera = useCallback(
+    async (targetFacing: 'user' | 'environment' = facingMode, targetDevId?: string) => {
+      try {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+        }
+        setErrorMessage('');
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
-      };
+        let devId = targetDevId !== undefined ? targetDevId : selectedDeviceId;
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(() => {});
+        // Query available devices
+        if (navigator.mediaDevices?.enumerateDevices) {
+          try {
+            const devs = await navigator.mediaDevices.enumerateDevices();
+            const vDevs = devs.filter((d) => d.kind === 'videoinput');
+            setAvailableDevices(vDevs);
+
+            // If no specific device is chosen or device is not in list, find the standard 1x camera
+            if (!devId || !vDevs.some((d) => d.deviceId === devId)) {
+              const bestId = findBestCameraDeviceId(vDevs, targetFacing);
+              if (bestId) {
+                devId = bestId;
+                setSelectedDeviceId(bestId);
+              }
+            }
+          } catch (e) {
+            console.warn('enumerateDevices error:', e);
+          }
+        }
+
+        // Native Camera Standard: 4:3 aspect ratio (same as smartphone native camera app)
+        // Eliminates artificial cropping zoom caused by 16:9 widescreen streams
+        const videoConstraints: MediaTrackConstraints = {
+          aspectRatio: { ideal: 4 / 3 },
+          width: { ideal: 1920, min: 640 },
+          height: { ideal: 1440, min: 480 },
+        };
+
+        if (devId) {
+          videoConstraints.deviceId = { exact: devId };
+        } else {
+          videoConstraints.facingMode = { ideal: targetFacing };
+        }
+
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraints,
+            audio: false,
+          });
+        } catch (initialErr) {
+          console.warn('Retrying camera with facingMode fallback:', initialErr);
+          // Fallback if specific deviceId constraint is rejected
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: targetFacing },
+              aspectRatio: { ideal: 4 / 3 },
+              width: { ideal: 1280, min: 640 },
+              height: { ideal: 960, min: 480 },
+            },
+            audio: false,
+          });
+        }
+
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+
+        // Calibrate hardware zoom to 1.0x (standard native camera scale)
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const caps = track.getCapabilities ? (track.getCapabilities() as any) : {};
+          if (caps && typeof caps.zoom === 'object') {
+            const minZ = caps.zoom.min ?? 1.0;
+            const maxZ = caps.zoom.max ?? 1.0;
+            const stepZ = caps.zoom.step ?? 0.1;
+            setZoomCapabilities({ min: minZ, max: maxZ, step: stepZ });
+
+            // Apply standard 1.0x native zoom
+            const base1x = Math.max(minZ, Math.min(1.0, maxZ));
+            setCurrentZoom(base1x);
+            try {
+              await (track as any).applyConstraints({
+                advanced: [{ zoom: base1x }],
+              });
+            } catch (zErr) {
+              console.warn('Zoom constraint error:', zErr);
+            }
+          } else {
+            setZoomCapabilities(null);
+            setCurrentZoom(1.0);
+          }
+        }
+
+        // Re-enumerate to get full device labels after permission is active
+        if (navigator.mediaDevices?.enumerateDevices) {
+          navigator.mediaDevices.enumerateDevices().then((devs) => {
+            setAvailableDevices(devs.filter((d) => d.kind === 'videoinput'));
+          }).catch(() => {});
+        }
+
+        setHasPermission(true);
+      } catch (err) {
+        console.warn('Camera access denied or failed:', err);
+        setHasPermission(false);
+        setErrorMessage('카메라 접근 권한을 허용해주세요. 또는 아래 샘플 모드로 진행할 수 있습니다.');
       }
-      setHasPermission(true);
-    } catch (err) {
-      console.warn('Camera access denied or failed:', err);
-      setHasPermission(false);
-      setErrorMessage('카메라 접근 권한을 허용해주세요. 또는 아래 샘플 모드로 진행할 수 있습니다.');
-    }
-  }, [facingMode]);
+    },
+    [facingMode, selectedDeviceId]
+  );
 
   useEffect(() => {
-    startCamera();
+    startCamera(facingMode);
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [startCamera]);
+  }, [facingMode]);
 
-  // Flip camera
+  // Flip camera between front (user) and back (environment)
   const toggleFacingMode = () => {
-    setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+    const nextFacing = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(nextFacing);
+    // Standard convention: front camera is mirrored, back camera is not mirrored
+    setIsMirrored(nextFacing === 'user');
+    setSelectedDeviceId('');
+    startCamera(nextFacing, '');
   };
 
-  // Capture a single frame from video element
+  // Toggle/reset zoom to 1.0x standard native camera scale
+  const handleToggleZoom = async () => {
+    if (!streamRef.current) return;
+    const track = streamRef.current.getVideoTracks()[0];
+    if (!track) return;
+
+    if (zoomCapabilities) {
+      // Toggle between 1.0x standard and 1.5x, returning cleanly to 1.0x
+      const nextZoom = currentZoom <= 1.05 && zoomCapabilities.max >= 1.5 ? 1.5 : 1.0;
+      try {
+        await (track as any).applyConstraints({
+          advanced: [{ zoom: nextZoom }],
+        });
+        setCurrentZoom(nextZoom);
+      } catch (e) {
+        console.warn('Failed to set zoom:', e);
+      }
+    } else {
+      setCurrentZoom(1.0);
+    }
+  };
+
+  // Cycle through cameras if multiple exist for current facing mode
+  const handleCycleCamera = () => {
+    const relevant = availableDevices.filter((d) => {
+      const lbl = d.label.toLowerCase();
+      if (facingMode === 'user') {
+        return lbl.includes('front') || lbl.includes('user') || lbl.includes('전면');
+      } else {
+        return !lbl.includes('front') && !lbl.includes('user') && !lbl.includes('전면');
+      }
+    });
+
+    if (relevant.length > 1) {
+      const currentIdx = relevant.findIndex((d) => d.deviceId === selectedDeviceId);
+      const nextIdx = (currentIdx + 1) % relevant.length;
+      const nextDev = relevant[nextIdx];
+      setSelectedDeviceId(nextDev.deviceId);
+      startCamera(facingMode, nextDev.deviceId);
+    } else {
+      toggleFacingMode();
+    }
+  };
+
+  // Capture a single frame from video element with exact 4:3 native ratio matching the viewfinder
   const captureCurrentFrame = (): string => {
     if (!videoRef.current) return '';
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+
+    const vw = video.videoWidth || 640;
+    const vh = video.videoHeight || 480;
+    const targetRatio = 4 / 3;
+    const currentRatio = vw / vh;
+
+    let sx = 0;
+    let sy = 0;
+    let sw = vw;
+    let sh = vh;
+
+    // Exact matching crop to 4:3 viewfinder so what you see is what you get
+    if (currentRatio > targetRatio + 0.01) {
+      sw = vh * targetRatio;
+      sx = (vw - sw) / 2;
+    } else if (currentRatio < targetRatio - 0.01) {
+      sh = vw / targetRatio;
+      sy = (vh - sh) / 2;
+    }
+
+    canvas.width = Math.round(sw);
+    canvas.height = Math.round(sh);
     const ctx = canvas.getContext('2d');
     if (!ctx) return '';
 
@@ -101,7 +303,8 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
     }
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/jpeg', 0.95);
   };
 
@@ -372,7 +575,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
             <div className="flex flex-wrap gap-2.5 sm:gap-3 justify-center">
               <button
                 type="button"
-                onClick={startCamera}
+                onClick={() => startCamera()}
                 className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-jua text-xs sm:text-sm flex items-center gap-2 transition"
               >
                 <RefreshCw className="w-4 h-4" /> 다시 시도
@@ -484,30 +687,58 @@ export const CameraView: React.FC<CameraViewProps> = ({ onAllPhotosCaptured, onC
         {/* Camera Control Overlays (Top Right & Left) */}
         {!isShooting && hasPermission && (
           <>
-            <div className="absolute top-2.5 sm:top-4 right-2.5 sm:right-4 flex gap-1.5 sm:gap-2 z-10">
+            <div className="absolute top-2.5 sm:top-4 right-2.5 sm:right-4 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 z-10 max-w-[85%]">
+              {/* Native 1.0x standard zoom control button */}
               <button
                 type="button"
-                onClick={toggleFacingMode}
-                title="카메라 전환"
-                className="p-2 sm:p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition min-w-[38px] min-h-[38px] flex items-center justify-center cursor-pointer"
-              >
-                <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsMirrored((prev) => !prev)}
-                title="좌우 반전"
-                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full backdrop-blur-sm transition flex items-center justify-center cursor-pointer ${
-                  isMirrored ? 'bg-amber-500 text-white font-bold' : 'bg-black/50 text-white hover:bg-black/70'
+                onClick={handleToggleZoom}
+                title="모바일 기본 1.0x 배율 맞춤"
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full backdrop-blur-md transition flex items-center gap-1 cursor-pointer shadow-lg active:scale-95 ${
+                  currentZoom <= 1.05
+                    ? 'bg-amber-500 text-white font-bold ring-2 ring-white/60'
+                    : 'bg-black/60 text-white hover:bg-black/80'
                 }`}
               >
-                <span className="font-jua text-[11px] sm:text-xs whitespace-nowrap">좌우반전</span>
+                <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                <span className="font-jua text-xs sm:text-sm whitespace-nowrap">
+                  {currentZoom.toFixed(1)}x 기본
+                </span>
               </button>
+
+              {/* Camera Switch (Front <-> Back / Other lenses) */}
+              <button
+                type="button"
+                onClick={handleCycleCamera}
+                title={facingMode === 'user' ? '후면 카메라로 전환' : '정면 카메라로 전환'}
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition flex items-center gap-1.5 min-h-[34px] sm:min-h-[38px] cursor-pointer shadow-lg active:scale-95"
+              >
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="font-jua text-xs sm:text-sm whitespace-nowrap">
+                  {facingMode === 'user' ? '후면 카메라' : '정면 카메라'}
+                </span>
+              </button>
+
+              {/* Mirror toggle (for selfie / front camera) */}
+              {facingMode === 'user' && (
+                <button
+                  type="button"
+                  onClick={() => setIsMirrored((prev) => !prev)}
+                  title="좌우 반전"
+                  className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full backdrop-blur-md transition flex items-center justify-center cursor-pointer shadow-lg active:scale-95 ${
+                    isMirrored ? 'bg-amber-500 text-white font-bold' : 'bg-black/60 text-white hover:bg-black/80'
+                  }`}
+                >
+                  <span className="font-jua text-[11px] sm:text-xs whitespace-nowrap">좌우반전</span>
+                </button>
+              )}
             </div>
 
-            <div className="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 z-10 bg-amber-400/90 text-amber-950 font-jua text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 shadow">
-              <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-ping" />
-              <span>촬영 대기 중</span>
+            {/* Top Left Status Badge */}
+            <div className="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 z-10 flex flex-col items-start gap-1">
+              <div className="bg-amber-400/95 backdrop-blur-xs text-amber-950 font-jua text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full flex items-center gap-1.5 shadow-md border border-white/50">
+                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-ping" />
+                <span>{facingMode === 'user' ? '정면 1x 기본 배율' : '후면 1x 기본 배율'}</span>
+              </div>
             </div>
           </>
         )}
